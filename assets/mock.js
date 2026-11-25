@@ -8,7 +8,7 @@
 (() => {
   const root = document.querySelector('[data-mock]');
   if (!root) return;
-  const SRC = 'assets/mock/', EXT = '.avif?5';   // ?N — версия кадров: переснял — увеличить, иначе браузер покажет старые из кэша
+  const SRC = 'assets/mock/', EXT = '.avif?6';   // ?N — версия кадров: переснял — увеличить, иначе браузер покажет старые из кэша
   const motion = document.documentElement.classList.contains('motion');
 
   // Окошки: размер в точках

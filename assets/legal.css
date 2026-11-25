@@ -10,7 +10,7 @@ body { font: 17px/1.55 var(--sans); background: linear-gradient(to bottom, #1514
 a { color: inherit; }
 .wrap { max-width: calc(var(--max) + 2 * var(--m)); margin: 0 auto; padding: var(--m); display: grid; gap: var(--m); }
 .logo { display: inline-flex; align-items: center; gap: 8px; height: var(--h-nav); font: 400 24px/1 var(--display); letter-spacing: .02em; text-decoration: none; }
-.logo .glyph { height: .7em; width: calc(.7em * 647 / 761); background: linear-gradient(#FFBB51, #FF6C00);
+.logo .glyph { height: .7em; width: calc(.7em * 647 / 749); background: linear-gradient(#FFBB51, #FF6C00);
   -webkit-mask: url(symbol.png) center / 100% 100% no-repeat; mask: url(symbol.png) center / 100% 100% no-repeat; }
 .logo span { position: relative; top: .052em; }
 .block { background: var(--glass-fill); box-shadow: var(--glass-edge); border-radius: var(--r-block); padding: var(--m); display: grid; gap: calc(var(--m) / 2); }

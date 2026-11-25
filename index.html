@@ -76,7 +76,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchPara
   --c1: #FFBB51;
   --c2: #FF6C00;
   --mark: linear-gradient(var(--c1), var(--c2));
-  --mark-ratio: calc(647 / 761);   /* знак assets/symbol.png: ширина к высоте */
+  --mark-ratio: calc(647 / 749);   /* знак assets/symbol.png: ширина к высоте */
 
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;   /* системный: со стороны ничего не грузится */
   --display: "Bebas Neue", "Impact", var(--sans);
@@ -211,7 +211,7 @@ section { margin-top: var(--section); }
   --t-mark: calc(.5s * var(--tempo));
   --t-glow: 1.4s;                              /* свечение разгорается */
   --t-breath: 6s;                              /* и дальше дышит */
-  --mark-split: 52.5%;                           /* где ствол делит знак */
+  --mark-split: 51%;                             /* где ствол делит знак */
   --mark-rise: 22%;                            /* откуда поднимается половина */
   --glow-a: .34;                               /* сила свечения */
 }
@@ -388,7 +388,7 @@ footer { margin: var(--section) 0 var(--m); }
     <p class="scene-line" data-scene-line aria-live="polite"></p>
     <div class="mock" data-mock>
       <div class="win">
-        <img class="frame on" src="assets/mock/L0.avif?5" alt="Mus3 window: library on the left, album covers in the middle, playlist on the right">
+        <img class="frame on" src="assets/mock/L0.avif?6" alt="Mus3 window: library on the left, album covers in the middle, playlist on the right">
         <img class="frame" alt="">
         <video class="vis" src="assets/mock/visualizer.mp4?2" muted loop playsinline preload="none"></video>
       </div>
@@ -399,7 +399,7 @@ footer { margin: var(--section) 0 var(--m); }
       <span class="keys" aria-hidden="true"></span>
     </div>
     <!-- Телефон: вместо живого макета и фишек — один снимок окна (как у Sapfire) -->
-    <img class="still" src="assets/mock/C0.avif?5" width="2400" height="1500" alt="Mus3 window: Tag Tree on the left, album covers with an open album, playlist on the right">
+    <img class="still" src="assets/mock/C0.avif?6" width="2400" height="1500" alt="Mus3 window: Tag Tree on the left, album covers with an open album, playlist on the right">
   </header>
 
   <!-- 2. Inbox — последнее слово второй строки слогана и то, чего в первом экране нет. Снимок настоящий (tools/shoot) -->
@@ -410,7 +410,7 @@ footer { margin: var(--section) 0 var(--m); }
         <p class="lead">Tag it, check it, then send it to your library, renamed and filed your way.</p>
         <p class="quiet">Your library stays clean: nothing gets in half‑tagged, and files move only when you send them.</p>
       </div>
-      <img class="pic" src="assets/shots/inbox.avif?2" width="2400" height="1500" decoding="async" alt="Mus3 Inbox: new albums grouped by artist, waiting to be tagged">
+      <img class="pic" src="assets/shots/inbox.avif?3" width="2400" height="1500" decoding="async" alt="Mus3 Inbox: new albums grouped by artist, waiting to be tagged">
     </div>
   </section>
 
@@ -423,7 +423,7 @@ footer { margin: var(--section) 0 var(--m); }
         <figcaption><h3>Spectrogram</h3><p>See what is really inside a file. Up to eight tracks one under another: spot an upscaled or transcoded copy at a glance.</p></figcaption>
       </figure>
       <figure class="block tile" data-reveal style="--i: 1">
-        <img class="pic" src="assets/shots/night.avif?2" width="1440" height="900" decoding="async" loading="lazy" alt="Mus3 with the Night Plum skin">
+        <img class="pic" src="assets/shots/night.avif?3" width="1440" height="900" decoding="async" loading="lazy" alt="Mus3 with the Night Plum skin">
         <figcaption><h3>Skins</h3><p>Paper, Ocean Glass, Night Plum, or your own: colours, glass, fonts and the playing track highlight.</p></figcaption>
       </figure>
     </div>
@@ -658,6 +658,6 @@ addEventListener('scroll', onScroll, { passive: true }); onScroll();
   el.addEventListener('pointerleave', () => { want = 0; });
 })();
 </script>
-<script src="assets/mock.js?6"></script>
+<script src="assets/mock.js?7"></script>
 </body>
 </html>
