@@ -17,7 +17,7 @@
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0F0E0D">
-<script>/* Движение (знак, ветер, листья, макет, появление блоков) — только если в системе не включено «Уменьшить движение».
+<script>/* Движение макета, задника и появления блоков — только если в системе не включено «Уменьшить движение». Знак (появление, ветер, листья) — всегда (решение пользователя 26.11.2026).
    ?motion в адресе — включить принудительно: для проверки (панель браузера Claude включает «Уменьшить движение») */
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).has('motion')) document.documentElement.classList.add('motion');</script>
 <!-- Для поисковиков: программа и вопросы (ответы — те же, что в #faq: менять вместе) -->
@@ -226,10 +226,10 @@ section { margin-top: var(--section); }
 .emblem { --leaf: 9%; }                        /* ширина листочка от ширины знака */
 .emblem .leaf { position: absolute; left: 0; top: 0; width: var(--leaf); aspect-ratio: 5 / 8; margin: calc(var(--leaf) * -.8) 0 0 calc(var(--leaf) * -.5);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); pointer-events: none; will-change: transform, opacity; }
-.motion .emblem .half { animation: half-in var(--t-in) var(--spring) both; }
-.motion .emblem .half.r { animation-delay: var(--t-step); }
-.motion .emblem .glow { animation: fade-in var(--t-glow) ease-out var(--t-stop) both, breath var(--t-breath) ease-in-out calc(var(--t-stop) + var(--t-glow)) infinite; }
-.motion .intro .name, .motion .intro .lead { animation: rise var(--t-mark) var(--spring) var(--t-stop) both; }
+.emblem .half { animation: half-in var(--t-in) var(--spring) both; }
+.emblem .half.r { animation-delay: var(--t-step); }
+.emblem .glow { animation: fade-in var(--t-glow) ease-out var(--t-stop) both, breath var(--t-breath) ease-in-out calc(var(--t-stop) + var(--t-glow)) infinite; }
+.intro .name, .intro .lead { animation: rise var(--t-mark) var(--spring) var(--t-stop) both; }
 @keyframes half-in { from { opacity: 0; transform: translateY(var(--mark-rise)); } 30% { opacity: 1; } }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(.08em); } }
@@ -569,7 +569,7 @@ addEventListener('scroll', onScroll, { passive: true }); onScroll();
 <script>/* листочки слетают со знака под курсором, сам знак покачивается, как от ветра: ромбик появляется там, где курсор над кроной (по маске assets/symbol.png), и падает, качаясь */
 (() => {
   const el = document.querySelector('.emblem');
-  if (!el || !document.documentElement.classList.contains('motion')) return;
+  if (!el) return;   // знак живёт и при «Уменьшить движение»: появление короткое, листья и ветер — только в ответ на курсор
   const EVERY = 55, MAX = 36;                     // не чаще, мс; столько листочков разом
   const FALL = [1.1, 2.1], DRIFT = .7, SWAY = .22, LIFE = [1600, 2600];   // ближние листья: падение, снос и размах взмаха — в высотах знака; время, мс
   const C1 = [255, 187, 81], C2 = [255, 108, 0];  // --c1, --c2
