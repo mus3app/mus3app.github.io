@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mus3 — a music player for people who own their music</title>
+<meta name="description" content="Mus3 is a music player, library and tag editor for macOS. Tag Tree, tabs, auto-playlists, batch tag editing, Inbox for new music. $25 once, 30-day free trial.">
+<link rel="canonical" href="https://mus3.app/">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mus3.app/">
+<meta property="og:title" content="Mus3 — Player · Library · Editor">
+<meta property="og:description" content="A music player for people who own their music. macOS 14 or later. $25 once, 30-day free trial.">
+<meta property="og:image" content="https://mus3.app/assets/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F0E0D">
+<script>/* Движение (знак, ветер, листья, макет, появление блоков) — только если в системе не включено «Уменьшить движение».
+   ?motion в адресе — включить принудительно: для проверки (панель браузера Claude включает «Уменьшить движение») */
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).has('motion')) document.documentElement.classList.add('motion');</script>
+<!-- Для поисковиков: программа и вопросы (ответы — те же, что в #faq: менять вместе) -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"SoftwareApplication","name":"Mus3","applicationCategory":"MultimediaApplication","operatingSystem":"macOS 14 or later","url":"https://mus3.app/",
+  "description":"Music player, library and tag editor for macOS.","offers":{"@type":"Offer","price":"25","priceCurrency":"USD"}},
+ {"@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Do I have to import my library?","acceptedAnswer":{"@type":"Answer","text":"No. Point Mus3 at your folders and start listening. Nothing is copied or moved. Ratings, tags and artwork saved in your files show up as they are."}},
+  {"@type":"Question","name":"Do I need an account or the internet?","acceptedAnswer":{"@type":"Answer","text":"No. Mus3 plays files on your Mac. No account, no sign-in. It goes online only for what you ask for: cover art, lyrics, tag lookup, radio."}},
+  {"@type":"Question","name":"What does Mus3 do with my files?","acceptedAnswer":{"@type":"Answer","text":"Nothing until you say so. Tags, ratings and artwork are written when you edit them. Files move only when you send or organise them."}},
+  {"@type":"Question","name":"What happens after the first year?","acceptedAnswer":{"@type":"Answer","text":"Mus3 keeps working, for good. You keep every version released during your year. Newer ones are a discounted renewal, only if you want them."}},
+  {"@type":"Question","name":"Will it be on the Mac App Store?","acceptedAnswer":{"@type":"Answer","text":"Later, and with fewer features because of App Store rules. The full version lives here."}},
+  {"@type":"Question","name":"What about cracked copies?","acceptedAnswer":{"@type":"Answer","text":"A cracked Mus3 is someone else's program with our name on it. We can't tell you what it does on your Mac."}}]}]}
+</script>
+<style>
+/* Страница устроена как сайт Sapfire (Sapfire/promo/site/index.html): один задник под всей страницей, поверх — стеклянные блоки;
+   шапка-капсула; первый экран — знак · слово · слоган и живое окно; главный раздел «текст + снимок»; остальное плитками;
+   цифры и таблица сравнения; последний экран; подвал-оглавление. Все размеры — отсюда, остальное выводится. */
+:root {
+  --lead-fs: clamp(19px, 2vw, 22px);   /* кегль слогана: от него в первом экране считается кегль слова */
+  --display-cap-h: .7em;     /* высота прописных Bebas */
+  --display-cap: -.052em;    /* центр прописных Bebas выше центра строки */
+  --m: 24px;                 /* один модуль отступа: поля, промежутки, отступ внутри блока */
+  --max: 1200px;
+  --win-w: 1600; --win-r: 16;   /* окно Mus3 в точках: ширина и угол */
+  --r-block: calc(min(var(--max), 100vw - 2 * var(--m)) * var(--win-r) / var(--win-w));   /* блок раздела = угол окна Mus3 на экране (при 1200 — 12) */
+  --r-inner: max(0px, var(--r-block) - var(--m));   /* вложенное в блок: R − отступ */
+  --h-btn: 44px;             /* кнопка-капсула */
+  --h-nav: 44px;             /* шапка-капсула */
+  --nav-pad: 6px;            /* отступ кнопки от края шапки и кружка от края кнопки */
+  --h-chip: 36px;            /* кнопка сцены над окном */
+  --section: calc(var(--m) * 5);   /* расстояние между разделами */
+  --h2-fs: clamp(32px, 4.6vw, 56px);   /* заголовок раздела; им же — цифры в #compare и цена */
+  --under-nav: calc(var(--h-nav) + 2 * var(--m));
+
+  /* Задник (.bg): почти чёрный нейтральный, чуть тёплый; оранжевый — только как свет из угла и свечение за знаком.
+     Блоки — нейтральное белое стекло поверх. Оранжевый остаётся в знаке, «3», отметках таблицы и точке макета */
+  --coal: #0F0E0D;           /* фон; текст на светлой кнопке */
+  --bg: var(--coal);
+  --ink: #F5F4F2;
+  --on-ink: var(--coal);
+  --mute: rgb(245 244 242 / .62);
+  --dark-ink: var(--ink); --dark-mute: var(--mute);   /* имена из блока знака */
+  --shade: rgb(255 255 255 / .08);   /* призрачная кнопка, заглушки, строки настроек */
+  --glass-rgb: 255 255 255; --glass-a: .05;
+  --glass: rgb(var(--glass-rgb) / var(--glass-a));   /* стекло: шапка при прокрутке и все блоки — одно значение */
+  --glass-sheen: .08; --glass-hi: .14; --glass-line: .09;   /* отлив, блик по верхней кромке, контур */
+  --sh-rgb: 0 0 0; --sh-y: 0px; --sh-blur: 12px; --sh-a: .35;   /* тень блоков */
+  --cur-sheen: 4; --cur-edge: 3; --cur-r: 900px; --cur-er: 60px; --cur-near: 200;   /* блик за курсором: сила пятна и кромки, радиусы, с какого расстояния (px) */
+  --nav-rgb: 22 21 20; --nav-a: .62; --nav-dim: .7; --nav-blur: 20px; --nav-sat: 1.8;   /* стекло шапки своё: под ней проезжают светлые снимки */
+  --glass-fill: linear-gradient(155deg, rgb(255 255 255 / var(--glass-sheen)), rgb(255 255 255 / 0) 45%), var(--glass);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / var(--glass-hi)), inset 0 0 0 1px rgb(255 255 255 / var(--glass-line)), 0 var(--sh-y) var(--sh-blur) rgb(var(--sh-rgb) / var(--sh-a));
+
+  /* цвета знака: оранжевый сверху вниз */
+  --c1: #FFBB51;
+  --c2: #FF6C00;
+  --mark: linear-gradient(var(--c1), var(--c2));
+  --mark-ratio: calc(647 / 761);   /* знак assets/symbol.png: ширина к высоте */
+
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;   /* системный: со стороны ничего не грузится */
+  --display: "Bebas Neue", "Impact", var(--sans);
+}
+@media (max-width: 720px) { :root { --m: 16px; } }
+@font-face { font-family: "Bebas Neue"; src: url(assets/bebas-neue.woff2) format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+
+/* Задник: фиксированный, под всей страницей. Основа стоит; свет — отдельный слой, двигается только transform'ом
+   (прокрутка: медленнее страницы и вверх; курсор: чуть к нему) — скрипт внизу */
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+      --fill-top: #151413; --fill-bottom: #0B0A0A;
+      --light: 255 108 0; --light-a: .34; --light-x: 94%; --light-y: 90%; --light-r: 60vmax;   /* свет: цвет, сила, центр, радиус */
+      --dark: 0 0 0; --dark-a: .5;   /* тень слева сверху */
+      --par-scroll: .12; --par-max: .3; --par-cursor: 24; }   /* параллакс: доля прокрутки, предел сдвига в высотах экрана (слой света больше экрана на столько же с запасом), сдвиг за курсором, px */
+.bg i { position: absolute; display: block; }
+.bg .base { inset: 0; background: linear-gradient(to bottom, var(--fill-top), var(--fill-bottom)); }
+.bg .dark { inset: -20%; background: radial-gradient(ellipse 55% 70% at 12% 20%, rgb(var(--dark) / var(--dark-a)), rgb(var(--dark) / 0)); }
+.bg .glow { inset: -50%; will-change: transform;
+            background: radial-gradient(circle var(--light-r) at var(--light-x) var(--light-y), rgb(var(--light) / var(--light-a)), rgb(var(--light) / calc(var(--light-a) * .35)) 30%, rgb(var(--light) / 0) 100%); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: var(--under-nav); }
+body { font: 17px/1.5 var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+img { display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+[hidden] { display: none !important; }
+.wrap { max-width: calc(var(--max) + 2 * var(--m)); margin: 0 auto; padding: 0 var(--m); }
+
+.block { background: var(--glass-fill); box-shadow: var(--glass-edge); border-radius: var(--r-block); padding: var(--m); }
+/* Стекло за курсором: отлив (пятно внутри) и блик кромки. Скрипт внизу ставит блоку --gx/--gy (курсор в его координатах) и --gk (близость) */
+.glassy { position: relative; isolation: isolate; }
+.glassy.near::before, .glassy.near::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; transition: opacity .3s; }
+.glassy::before { opacity: calc(var(--gk, 0) * var(--cur-sheen));
+                  background: radial-gradient(circle var(--cur-r) at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .08), rgb(255 255 255 / .062) 25%, rgb(255 255 255 / .026) 50%, rgb(255 255 255 / .004) 75%, rgb(255 255 255 / 0) 92%); }
+.glassy::after { opacity: calc(var(--gk, 0) * var(--cur-edge)); padding: 1px;
+                 background: radial-gradient(circle var(--cur-er) at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .3), rgb(255 255 255 / .233) 25%, rgb(255 255 255 / .099) 50%, rgb(255 255 255 / .014) 75%, rgb(255 255 255 / 0) 92%);
+                 -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+                 mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+
+h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; }
+h2 { font-size: var(--h2-fs); line-height: 1.05; text-wrap: balance; }
+h3 { font-size: 20px; line-height: 1.25; font-weight: 500; letter-spacing: -.01em; }
+p { text-wrap: pretty; }
+.eyebrow { font: 500 13px/1 var(--sans); color: var(--mute); }
+.lead { font-size: var(--lead-fs); line-height: 1.45; color: var(--mute); }
+.quiet { font-size: 15px; color: var(--mute); }
+.quiet a { text-decoration: underline; text-underline-offset: 3px; }
+.meta { font-size: 14px; color: var(--mute); }
+.meta span + span::before { content: " · "; }
+.meta { text-wrap: balance; }
+.meta span { white-space: nowrap; }   /* факт целиком на одной строке: «Apple silicon & Intel» не рвётся */
+kbd { display: inline-block; min-width: 24px; padding: 2px 8px; border-radius: 12px; background: var(--shade); font: 500 13px/20px var(--sans); text-align: center; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; height: var(--h-btn); padding: 0 calc(var(--h-btn) / 2); border-radius: calc(var(--h-btn) / 2);
+       font: 600 15px/1 var(--sans); white-space: nowrap; transition: transform .15s; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--ink); color: var(--on-ink); }
+.btn-ghost { background: var(--shade); }
+/* Пока нет сборки и магазина: кнопка видна, но не нажимается (data-todo). Появится .dmg / оплата — вернуть href и прежнюю подпись */
+.btn[data-todo] { opacity: .55; pointer-events: none; cursor: default; }
+/* Кружок со значком в капсуле: отступ до края — как у кнопки в шапке, круг концентричен торцу капсулы */
+.btn .dot { flex: none; width: calc(var(--h-btn) - 2 * var(--nav-pad)); height: calc(var(--h-btn) - 2 * var(--nav-pad)); border-radius: 50%;
+            margin-left: calc(var(--nav-pad) - var(--h-btn) / 2); background: var(--on-ink); color: var(--ink); display: grid; place-items: center; }
+.btn .dot svg { width: 14px; height: 14px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--m) / 2); }
+
+section { margin-top: var(--section); }
+.head { display: grid; gap: var(--m); margin-bottom: var(--m); }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--m); }
+@media (max-width: 900px) { .grid3 { grid-template-columns: 1fr; } }
+.tile { display: grid; gap: calc(var(--m) / 2); align-content: start; }
+.tile p { color: var(--mute); font-size: 16px; }
+
+/* Появление при прокрутке: блок всплывает, соседи — с шагом 70 мс (--i) */
+.motion [data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; transition-delay: calc(var(--i, 0) * 70ms); }
+.motion [data-reveal].in { opacity: 1; transform: none; }
+
+/* 0. Шапка: наверху без подложки; поехала страница — тёмное стекло (класс .scrolled на <html>) */
+.nav { --h-btn: calc(var(--h-nav) - 2 * var(--nav-pad));   /* кнопка в шапке — капсула на 6 меньше, концентрична */
+       position: sticky; top: var(--m); z-index: 10; margin-top: var(--m); }
+.nav .bar { display: flex; align-items: center; gap: var(--m); height: var(--h-nav); padding: var(--nav-pad); border-radius: calc(var(--h-nav) / 2);
+            transition: background-color .3s, box-shadow .3s, -webkit-backdrop-filter .3s, backdrop-filter .3s; }
+.scrolled .nav .bar { background: linear-gradient(155deg, rgb(255 255 255 / .14), rgb(255 255 255 / 0) 45%), rgb(var(--nav-rgb) / var(--nav-a));
+                      -webkit-backdrop-filter: blur(var(--nav-blur)) saturate(var(--nav-sat)) brightness(var(--nav-dim));
+                      backdrop-filter: blur(var(--nav-blur)) saturate(var(--nav-sat)) brightness(var(--nav-dim));
+                      box-shadow: var(--glass-edge); }
+.logo { display: flex; align-items: center; gap: 8px; font: 400 24px/1 var(--display); letter-spacing: .02em; flex-shrink: 0; white-space: nowrap; }
+.glyph { display: block; flex: none; height: var(--display-cap-h); width: calc(var(--display-cap-h) * var(--mark-ratio)); background: var(--mark);   /* знак ростом с прописные MUS3 */
+  -webkit-mask: url(assets/symbol.png) center / 100% 100% no-repeat; mask: url(assets/symbol.png) center / 100% 100% no-repeat; }
+.nav .logo .glyph { margin-left: calc((var(--h-nav) - var(--display-cap-h)) / 2 - var(--nav-pad)); }   /* на равном отступе от торца */
+.nav .logo span { position: relative; top: calc(-1 * var(--display-cap)); }   /* середина прописных Bebas — на середине знака */
+.nav .logo small { font: 400 15px/1 var(--sans); letter-spacing: 0; color: var(--mute); }   /* «music player» — кеглем ссылок шапки, приглушённо */
+.nav .links { display: flex; gap: var(--m); margin-left: auto; font-size: 15px; font-weight: 600; }
+.nav .links a { opacity: .9; } .nav .links a:hover { opacity: 1; }
+@media (max-width: 720px) { .nav .links { display: none; } .nav .btn { margin-left: auto; } .nav .bar { gap: 0; } }
+@media (max-width: 400px) { .nav .logo small { display: none; } }
+
+/* 1. Первый экран — на общем заднике: знак · слово · слоган, ряд сцен у самого окна, живое окно */
+.hero { display: grid; justify-items: center; gap: var(--m); margin-top: calc(var(--m) * 2); text-align: center; }
+/* первый экран как у Sapfire: знак · слово · слоган в ряд.
+   Высота слова = высота слогана: от верха прописных первой строки до базовой третьей (системный шрифт, строка 1.45: верх прописных .400f, базовая третьей 4.005f → 3.605f).
+   Bebas: прописные .7 кегля → кегль слова 3.605f / .7; при строке .85 верх прописных .025 кегля от верха.
+   Знак ростом с тот же текст и стоит вровень с ним. Уже 980 — знак и слово в ряд, слоган под ними, по центру */
+.intro { --lead-fs: clamp(19px, 2vw, 22px); --text-h: calc(var(--lead-fs) * 3.605); --name-fs: calc(var(--text-h) / .7);
+  --cap-top: calc(var(--lead-fs) * .400);
+  display: grid; grid-template-columns: repeat(3, auto); grid-template-areas: "mark word lead"; justify-content: center; align-items: start;
+  column-gap: var(--m); row-gap: var(--m); text-align: left; }
+.intro .emblem { grid-area: mark; width: calc(var(--text-h) * var(--mark-ratio)); min-width: 0; margin: var(--cap-top) 0 0; }
+.intro .name { grid-area: word; font: 400 var(--name-fs)/.85 "Bebas Neue", var(--sans); letter-spacing: 0; margin-top: calc(var(--cap-top) - var(--name-fs) * .025);
+  text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.hero .intro .lead { grid-area: lead; font: 400 var(--lead-fs)/1.45 var(--sans); color: var(--dark-mute); max-width: none; margin: 0; }
+.intro .lead b { font-weight: 600; color: var(--dark-ink); }
+@media (max-width: 980px) {
+  .intro { grid-template-columns: 1fr auto auto 1fr; grid-template-areas: ". mark word ." "lead lead lead lead"; }   /* знак вплотную к слову, слоган под ними */
+  .hero .intro .lead { text-align: center; } }
+@media (max-width: 720px) { .intro .lead br { display: none; } }
+/* «3» — в цветах знака */
+.intro .three { background: var(--mark);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 2px 12px rgba(0,0,0,.35));   /* тень как у «Mus», но не поверх цвета */
+  display: inline-block; padding: .15em 0; margin: -.15em 0; }   /* фон под цвет шире строки — иначе верх и низ цифры обрезаются (line-height .8) */
+
+/* знак: силуэт из assets/symbol.png (маска), залит цветами иконки. Две половины — слева и справа от ствола — поднимаются по очереди;
+   сзади мягкое свечение тех же цветов (градиент, без размытия) */
+:root {
+  --spring: linear(0, .045, .166, .339, .538, .741, .931, 1.092, 1.216, 1.298, 1.34, 1.344, 1.317, 1.267, 1.203, 1.132, 1.063, 1.001, .95, .913, .89, .881, .884, .896, .916, .939, .963, .985, 1.003, 1.016, 1.024, 1.027, 1.026, 1.022, 1.015, 1.008, 1.001, .996, .992, .99, .99, .991, .993, .996, .999, 1.001, 1.003, 1.004, 1.004, 1.003, 1.002, 1.001, 1);
+  --tempo: 1;                                  /* темп появления */
+  --t-in: calc(.7s * var(--tempo));            /* половина знака встаёт на место */
+  --t-step: calc(.14s * var(--tempo));         /* вторая половина — следом */
+  --t-stop: calc(var(--t-step) + var(--t-in) * .35);   /* знак почти на месте — всплывают слово и слоган */
+  --t-mark: calc(.5s * var(--tempo));
+  --t-glow: 1.4s;                              /* свечение разгорается */
+  --t-breath: 6s;                              /* и дальше дышит */
+  --mark-split: 52.5%;                           /* где ствол делит знак */
+  --mark-rise: 22%;                            /* откуда поднимается половина */
+  --glow-a: .34;                               /* сила свечения */
+}
+.emblem { position: relative; aspect-ratio: var(--mark-ratio); }
+.emblem .half { position: absolute; inset: 0; background: var(--mark);
+  -webkit-mask: url(assets/symbol.png) center / 100% 100% no-repeat; mask: url(assets/symbol.png) center / 100% 100% no-repeat; }
+.emblem .half.l { clip-path: inset(-30% calc(100% - var(--mark-split)) -30% -30%); }
+.emblem .half.r { clip-path: inset(-30% -30% -30% var(--mark-split)); }
+.emblem .glow { position: absolute; inset: -60%; z-index: -1; pointer-events: none; opacity: var(--glow-a);
+  background: radial-gradient(closest-side, var(--c2), rgb(255 108 0 / .35) 45%, transparent 100%); }
+/* листочки: ромбики цвета кроны слетают из-под курсора (скрипт внизу страницы); только transform и opacity */
+.emblem { --leaf: 9%; }                        /* ширина листочка от ширины знака */
+.emblem .leaf { position: absolute; left: 0; top: 0; width: var(--leaf); aspect-ratio: 5 / 8; margin: calc(var(--leaf) * -.8) 0 0 calc(var(--leaf) * -.5);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); pointer-events: none; will-change: transform, opacity; }
+.motion .emblem .half { animation: half-in var(--t-in) var(--spring) both; }
+.motion .emblem .half.r { animation-delay: var(--t-step); }
+.motion .emblem .glow { animation: fade-in var(--t-glow) ease-out var(--t-stop) both, breath var(--t-breath) ease-in-out calc(var(--t-stop) + var(--t-glow)) infinite; }
+.motion .intro .name, .motion .intro .lead { animation: rise var(--t-mark) var(--spring) var(--t-stop) both; }
+@keyframes half-in { from { opacity: 0; transform: translateY(var(--mark-rise)); } 30% { opacity: 1; } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(.08em); } }
+@keyframes breath { 50% { opacity: calc(var(--glow-a) * .7); transform: scale(1.05); } }
+
+/* Сцены: фишки-стекло у самого окна; подписи сцены на экране нет — сцену видно в окне (строка остаётся для чтения с экрана) */
+.scenes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: calc(var(--m) / 2); }
+.scenes button { position: relative; overflow: hidden; isolation: isolate; height: var(--h-chip); padding: 0 calc(var(--h-chip) / 2); border-radius: calc(var(--h-chip) / 2);
+                 font: 600 15px/1 var(--sans); background: var(--glass-fill); transition: background-color .2s, color .2s, transform .15s;
+                 box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--glass-hi)), inset 0 0 0 1px rgb(255 255 255 / var(--glass-line)), 0 calc(var(--sh-y) / 2) calc(var(--sh-blur) / 2) rgb(var(--sh-rgb) / calc(var(--sh-a) * .7)); }
+.scenes button:hover { background: linear-gradient(rgb(255 255 255 / .08), rgb(255 255 255 / .08)), var(--glass-fill); }
+.scenes button:active { transform: scale(.97); }
+.scenes button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.scenes button.on { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+/* Мерцание: фишки по очереди слева направо на миг светлеют; на выбранной не нужно. Меняется только яркость */
+.scenes button::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: rgb(255 255 255 / .22); opacity: 0;
+                        animation: chip-twinkle 5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .18s + 1s); }
+.scenes button:nth-child(2) { --i: 1; } .scenes button:nth-child(3) { --i: 2; } .scenes button:nth-child(4) { --i: 3; } .scenes button:nth-child(5) { --i: 4; } .scenes button:nth-child(6) { --i: 5; }
+.scenes button.on::after { content: none; }
+@keyframes chip-twinkle { 0%, 100% { opacity: 0; } 6% { opacity: 1; } 14% { opacity: 0; } }
+/* Телефон: живой окно не читается — вместо него снимок с углами окна, фишек нет */
+.still { display: none; width: 100%; height: auto; border-radius: calc(100vw / var(--win-w) * var(--win-r)); box-shadow: 0 0 0 1px rgb(255 255 255 / .1); }
+@media (max-width: 720px) { .scenes, .mock { display: none; } .still { display: block; } }
+.scene-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* живой макет окна (assets/mock.js): 1 точка окна = 100cqw / 1600 */
+.mock { --pt: calc(100cqw / 1600); position: relative; width: 100%; container-type: inline-size; margin-top: calc(var(--m) / 2); }
+.mock .win { position: relative; width: calc(var(--pt) * 1600); height: calc(var(--pt) * 1000); margin: 0 auto; border-radius: calc(var(--pt) * 16); overflow: hidden; background: #E9E8E7;
+             transition: width .7s cubic-bezier(.22, 1, .36, 1);
+             box-shadow: 0 calc(var(--pt) * 30) calc(var(--pt) * 80) rgb(0 0 0 / .55), 0 0 0 1px rgb(255 255 255 / .1); }
+.mock .frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }   /* cover: пока окно сжимается, кадр срезается с боков поровну */
+/* Full Cover и Visualizer: окно, как в самой программе, сжимается до квадрата 1000×1000 по центру */
+.mock .win.sq { width: calc(var(--pt) * 1000); }
+.mock .frame.on { opacity: 1; }
+.mock .vis { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #120E19; opacity: 0; transition: opacity .4s; }
+.mock .vis.on { opacity: 1; }
+/* окошко поверх окна (панель вида, Preferences): x, y, ширина — в точках окна */
+.mock .layer { position: absolute; left: 0; top: 0; width: calc(var(--w, 300) * var(--pt));
+               transform: translate(calc(var(--x, 0) * var(--pt)), calc(var(--y, 0) * var(--pt))) scale(.96); opacity: 0; pointer-events: none;
+               transition: transform .9s cubic-bezier(.22, 1, .36, 1), opacity .25s; filter: drop-shadow(0 calc(var(--pt) * 10) calc(var(--pt) * 24) rgb(0 0 0 / .28)); }
+.mock .layer.on { opacity: 1; transform: translate(calc(var(--x, 0) * var(--pt)), calc(var(--y, 0) * var(--pt))); }
+.mock .layer img { width: 100%; height: auto; }
+/* курсор и нажатие — нарисованные, ходят сами */
+.mock .cursor { position: absolute; left: 0; top: 0; width: calc(var(--pt) * 22); z-index: 3; pointer-events: none;
+                transform: translate(calc(var(--x, 800) * var(--pt)), calc(var(--y, 620) * var(--pt))); transition: transform .7s cubic-bezier(.45, 0, .25, 1); }
+.mock .ring { position: absolute; left: 0; top: 0; width: calc(var(--pt) * 36); aspect-ratio: 1; border-radius: 50%; z-index: 2; pointer-events: none; opacity: 0;
+              background: rgb(0 0 0 / .18); box-shadow: 0 0 0 calc(var(--pt) * 2) rgb(255 255 255 / .9);
+              transform: translate(calc(var(--x, 0) * var(--pt) - 50%), calc(var(--y, 0) * var(--pt) - 50%)) scale(.3); }
+.mock .ring.go { animation: tap .45s cubic-bezier(.22, 1, .36, 1); }
+@keyframes tap { 0% { opacity: .9; } 100% { opacity: 0; transform: translate(calc(var(--x, 0) * var(--pt) - 50%), calc(var(--y, 0) * var(--pt) - 50%)) scale(1); } }
+/* ход пользователя: нажал в окне — нарисованный курсор прячется, следующий пункт отмечен пульсирующей точкой (зона нажатия 64 точки) */
+.mock { cursor: pointer; }
+.mock.manual { cursor: default; }
+.mock.manual .cursor { opacity: 0; }
+.mock .spot { position: absolute; left: 0; top: 0; width: calc(var(--pt) * 64); aspect-ratio: 1; border-radius: 50%; z-index: 4; display: none; cursor: pointer;
+              transform: translate(calc(var(--x, 0) * var(--pt) - 50%), calc(var(--y, 0) * var(--pt) - 50%)); }
+.mock .spot.on { display: block; }
+.mock .spot::before, .mock .spot::after { content: ""; position: absolute; inset: 25%; border-radius: 50%; }
+.mock .spot::before { background: var(--c1); box-shadow: 0 0 0 calc(var(--pt) * 3) #fff, 0 calc(var(--pt) * 2) calc(var(--pt) * 10) rgb(0 0 0 / .35); transform: scale(.45); }
+.mock .spot::after { box-shadow: 0 0 0 calc(var(--pt) * 3) var(--c1); animation: hint 1.4s cubic-bezier(.22, 1, .36, 1) infinite; }
+.mock .spot:focus-visible { outline: 2px solid var(--ink); }
+@keyframes hint { from { opacity: .9; transform: scale(.5); } to { opacity: 0; transform: scale(1.6); } }
+/* клавиши под окном */
+.mock .keys { position: absolute; left: 50%; bottom: calc(var(--m) * -1); transform: translate(-50%, 50%); z-index: 3; height: var(--h-chip);
+              padding: 0 calc(var(--h-chip) / 2); border-radius: calc(var(--h-chip) / 2); display: grid; place-items: center;
+              font: 600 15px/1 var(--sans); color: var(--bg); background: var(--ink); opacity: 0; transition: opacity .25s; }
+.mock .keys.on { opacity: 1; }
+.mock { margin-top: calc(var(--m) * 2 / 3 - var(--m)); }   /* от фишек до окна — 2/3 модуля */
+.mock .win { border-radius: calc(var(--pt) * var(--win-r)); box-shadow: 0 calc(var(--pt) * 30) calc(var(--pt) * 80) rgb(var(--sh-rgb) / .55), 0 0 0 1px rgb(255 255 255 / .1); }
+
+/* 2. Главный раздел: текст слева, снимок справа — вровень с краем блока (внутри поля радиус R − поле вышел бы прямым) */
+.duo { display: grid; grid-template-columns: 5fr 7fr; padding: 0; overflow: hidden; }
+.duo .text { display: grid; gap: var(--m); align-content: center; padding: var(--m); }
+.pic { display: block; width: 100%; height: auto; }
+.duo .pic { height: 100%; object-fit: cover; object-position: left top; }
+/* 3. Остальное: два снимка с подписью, под ними плитки */
+.shots2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--m); }
+.shots2 .tile { padding: 0; overflow: hidden; gap: 0; }
+.shots2 .pic { aspect-ratio: 2 / 1; object-fit: cover; object-position: left top; }
+.shots2 figcaption { display: grid; gap: calc(var(--m) / 2); padding: var(--m); }
+@media (max-width: 900px) { .duo, .shots2 { grid-template-columns: 1fr; } .duo .pic { height: auto; } }
+.more { margin-top: var(--m); }
+
+/* 4. Сравнение: четыре цифры (кеглем заголовка раздела) и таблица в блоке; столбец Mus3 светлее, без линий между строками */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--m); margin-bottom: var(--m); }
+.stats .tile { grid-row: span 3; grid-template-rows: subgrid; }   /* цифра, подпись, текст — общие строки на весь ряд */
+@media (max-width: 900px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stats b, .sum { font-size: var(--h2-fs); line-height: 1; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.cmp { --r-inner-cmp: max(0px, var(--r-block) - var(--m) / 2); padding: calc(var(--m) / 2); overflow-x: auto; scrollbar-width: none; }   /* поле со всех сторон одно — столбец Mus3 концентричен блоку */
+.cmp table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.cmp th, .cmp td { padding: 10px calc(var(--m) / 2); text-align: center; white-space: nowrap; }
+.cmp thead th { font-weight: 600; font-size: 16px; }
+.cmp tbody th { text-align: left; font-weight: 400; color: var(--mute); }
+.cmp .me { background: rgb(255 255 255 / .12); font-weight: 600; }
+.cmp thead .me { border-radius: var(--r-inner-cmp) var(--r-inner-cmp) 0 0; }
+.cmp tbody tr:last-child .me { border-radius: 0 0 var(--r-inner-cmp) var(--r-inner-cmp); }
+.cmp .y { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); vertical-align: -3px; }
+.cmp .y::after { content: ""; display: block; width: 5px; height: 9px; margin: 3px auto 0; border: solid var(--c2); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.cmp .n { font-style: normal; color: var(--mute); opacity: .6; }
+@media (max-width: 720px) { .cmp tbody th { white-space: normal; min-width: 7.5em; } }
+
+/* 5. Цена: что входит — слева, сумма и кнопки — справа */
+.pricing { display: grid; grid-template-columns: 1fr 1fr; gap: var(--m); }
+.facts { display: grid; gap: var(--m); align-content: start; }
+.facts div { display: grid; gap: 4px; }
+.facts p { color: var(--mute); }
+.buy { display: grid; gap: var(--m); align-content: center; justify-items: start; }
+.sum small { font-size: var(--lead-fs); font-weight: 400; letter-spacing: 0; color: var(--mute); margin-left: calc(var(--m) / 2); }
+@media (max-width: 720px) { .pricing { grid-template-columns: 1fr; } }
+
+/* 7. Последний экран */
+.final { text-align: center; display: grid; justify-items: center; gap: var(--m); padding: calc(var(--m) * 3) var(--m); }
+.final .lockup { display: flex; align-items: center; gap: calc(var(--m) * .6); font-size: calc(var(--lead-fs) * 3.605 / .7); }   /* тот же кегль слова, что в первом экране */
+.final .lockup .name { font: 400 1em/.85 var(--display); letter-spacing: 0; }
+.final .lockup .glyph { position: relative; top: var(--display-cap); }
+.final .three { background: var(--mark); -webkit-background-clip: text; background-clip: text; color: transparent; display: inline-block; padding: .15em 0; margin: -.15em 0; }
+@media (max-width: 980px) { .final .lockup { font-size: clamp(56px, 12vw, 150px); } }
+
+/* Подвал — оглавление */
+footer { margin: var(--section) 0 var(--m); }
+/* Листья, долетевшие до последнего блока: слой падения поверх страницы (координаты документа) и лежащие на дне блока #download до перезагрузки */
+.fall { position: absolute; left: 0; top: 0; width: 100%; height: 0; z-index: 5; pointer-events: none; }
+.fall i, .final .rest { position: absolute; left: 0; top: 0; width: var(--lw); aspect-ratio: 5 / 8; margin: calc(var(--lw) * -.8) 0 0 calc(var(--lw) * -.5);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); will-change: transform; }
+.final { position: relative; }
+.final .rest { top: auto; margin: 0 0 0 calc(var(--lw) * -.5); transform-origin: 50% 50%; pointer-events: none; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--m); }
+.cols div { display: grid; gap: 8px; align-content: start; font-size: 15px; color: var(--mute); }
+.cols .eyebrow { margin-bottom: 4px; }
+.cols a:hover { color: var(--ink); }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="base"></i><i class="dark"></i><i class="glow"></i></div>
+
+<!-- 0. Шапка -->
+<div class="wrap nav">
+  <div class="bar">
+    <a class="logo" href="#top"><i class="glyph"></i><span>Mus3 <small>music player</small></span></a>
+    <nav class="links"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a></nav>
+    <a class="btn btn-primary" href="#pricing"><i class="dot"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5v9M3.5 8 7 11.5 10.5 8"/></svg></i><span>Download</span></a>
+  </div>
+</div>
+
+<main class="wrap" id="top">
+
+  <!-- 1. Первый экран: знак, слово, слоган в три строки; ряд сцен; живое окно Mus3 (assets/mock.js) -->
+  <header class="hero">
+    <div class="intro">
+      <div class="emblem" aria-hidden="true"><i class="glow"></i><i class="half l"></i><i class="half r"></i></div>
+      <h1 class="name">Mus<span class="three">3</span></h1>
+      <p class="lead">Player. Library. Tag editor. <br>Tag Tree. Tabs. Auto‑playlists. Inbox. <br>Your files. Pay once. No account.</p>
+    </div>
+    <div class="scenes" data-scenes role="group" aria-label="Show a feature"></div>
+    <p class="scene-line" data-scene-line aria-live="polite"></p>
+    <div class="mock" data-mock>
+      <div class="win">
+        <img class="frame on" src="assets/mock/L0.avif?5" alt="Mus3 window: library on the left, album covers in the middle, playlist on the right">
+        <img class="frame" alt="">
+        <video class="vis" src="assets/mock/visualizer.mp4?2" muted loop playsinline preload="none"></video>
+      </div>
+      <div class="layer"><img alt=""></div>
+      <i class="ring"></i>
+      <button class="spot" type="button" aria-label="Next step"></button>
+      <svg class="cursor" viewBox="0 0 22 32" aria-hidden="true"><path d="M2 2v24l6.2-5.8 4.3 9.6 3.9-1.7-4.2-9.4h8.6z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span class="keys" aria-hidden="true"></span>
+    </div>
+    <!-- Телефон: вместо живого макета и фишек — один снимок окна (как у Sapfire) -->
+    <img class="still" src="assets/mock/C0.avif?5" width="2400" height="1500" alt="Mus3 window: Tag Tree on the left, album covers with an open album, playlist on the right">
+  </header>
+
+  <!-- 2. Inbox — последнее слово второй строки слогана и то, чего в первом экране нет. Снимок настоящий (tools/shoot) -->
+  <section id="inbox">
+    <div class="head"><h2>New music lands in the Inbox first</h2></div>
+    <div class="block duo" data-reveal>
+      <div class="text">
+        <p class="lead">Tag it, check it, then send it to your library, renamed and filed your way.</p>
+        <p class="quiet">Your library stays clean: nothing gets in half‑tagged, and files move only when you send them.</p>
+      </div>
+      <img class="pic" src="assets/shots/inbox.avif?2" width="2400" height="1500" decoding="async" alt="Mus3 Inbox: new albums grouped by artist, waiting to be tagged">
+    </div>
+  </section>
+
+  <!-- 3. Остальное — только то, чего нет в первом экране: два снимка и короткие плитки -->
+  <section id="features">
+    <div class="head"><h2>Made for collections, not playlists of the week</h2></div>
+    <div class="shots2">
+      <figure class="block tile" data-reveal style="--i: 0">
+        <img class="pic" src="assets/shots/spectrogram-skin.avif" width="1440" height="1576" decoding="async" loading="lazy" alt="Mus3 Spectrogram window: tracks one under another with format, sample rate and frequency ceiling">
+        <figcaption><h3>Spectrogram</h3><p>See what is really inside a file. Up to eight tracks one under another: spot an upscaled or transcoded copy at a glance.</p></figcaption>
+      </figure>
+      <figure class="block tile" data-reveal style="--i: 1">
+        <img class="pic" src="assets/shots/night.avif?2" width="1440" height="900" decoding="async" loading="lazy" alt="Mus3 with the Night Plum skin">
+        <figcaption><h3>Skins</h3><p>Paper, Ocean Glass, Night Plum, or your own: colours, glass, fonts and the playing track highlight.</p></figcaption>
+      </figure>
+    </div>
+    <div class="grid3 more">
+      <div class="block tile" data-reveal style="--i: 0"><h3>Batch Edit and Find Tags</h3><p>Change tags across hundreds of tracks. Match albums against MusicBrainz.</p></div>
+      <div class="block tile" data-reveal style="--i: 1"><h3>Auto‑playlists</h3><p>Rules that keep themselves up to date, including “has duplicates”.</p></div>
+      <div class="block tile" data-reveal style="--i: 2"><h3>Full Cover and Visualizer</h3><p>The artwork, or a pattern drawn from the music, across the whole window.</p></div>
+      <div class="block tile" data-reveal style="--i: 0"><h3>Your formats</h3><p>MP3, FLAC, ALAC, AAC, WAV, AIFF, Ogg Vorbis and Opus. Ratings and tags are saved in the files.</p></div>
+      <div class="block tile" data-reveal style="--i: 1"><h3>15‑band equalizer</h3><p>Your own presets, ReplayGain, gapless playback and crossfade.</p></div>
+      <div class="block tile" data-reveal style="--i: 2"><h3>Mini player</h3><p>Lives in the menu bar, next to the clock.</p></div>
+      <div class="block tile" data-reveal style="--i: 0"><h3>Radio and lyrics</h3><p>Thousands of stations by genre, SomaFM included. Lyrics next to the playing track.</p></div>
+      <div class="block tile" data-reveal style="--i: 1"><h3>File Organiser</h3><p>Rename and file albums by their tags. Analyse Volume levels them out.</p></div>
+      <div class="block tile" data-reveal style="--i: 2"><h3>Keyboard first</h3><p>More than 200 commands, each with a shortcut you can change. Global hotkeys too.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. Сравнение: только проверенное, источники и что перепроверить — site/compare.md. Цифры — те же факты, что в остальных разделах -->
+  <section id="compare">
+    <div class="head"><h2>How it compares</h2></div>
+    <div class="stats">
+      <div class="block tile" data-reveal style="--i: 0"><b>$25</b><h3>Once</h3><p>No subscription. Swinsian is $34.95.</p></div>
+      <div class="block tile" data-reveal style="--i: 1"><b>30</b><h3>Days to try</h3><p>Everything unlocked. No card needed.</p></div>
+      <div class="block tile" data-reveal style="--i: 2"><b>8</b><h3>Formats</h3><p>FLAC, ALAC and Opus included. Apple Music doesn't play FLAC.</p></div>
+      <div class="block tile" data-reveal style="--i: 3"><b>0</b><h3>Accounts</h3><p>No sign‑in, nothing in a cloud. Your music stays in your folders.</p></div>
+    </div>
+    <div class="block cmp" data-reveal>
+      <table>
+        <thead><tr><th></th><th class=me>Mus3</th><th>Swinsian</th><th>Doppler</th><th>Apple Music</th></tr></thead>
+        <tbody>
+          <tr><th>Price</th><td class=me>$25 once</td><td>$34.95 once</td><td>One‑time purchase</td><td>Free app</td></tr>
+          <tr><th>Plays FLAC</th><td class=me><i class="y" aria-label="Yes"></i></td><td><i class="y" aria-label="Yes"></i></td><td><i class="y" aria-label="Yes"></i></td><td><i class="n" aria-label="No">—</i></td></tr>
+          <tr><th>Auto‑playlists</th><td class=me><i class="y" aria-label="Yes"></i></td><td><i class="y" aria-label="Yes"></i></td><td><i class="n" aria-label="No">—</i></td><td><i class="y" aria-label="Yes"></i></td></tr>
+          <tr><th>Tabs</th><td class=me><i class="y" aria-label="Yes"></i></td><td><i class="n" aria-label="No">—</i></td><td><i class="n" aria-label="No">—</i></td><td><i class="n" aria-label="No">—</i></td></tr>
+          <tr><th>Inbox for new music</th><td class=me><i class="y" aria-label="Yes"></i></td><td><i class="n" aria-label="No">—</i></td><td><i class="n" aria-label="No">—</i></td><td><i class="n" aria-label="No">—</i></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="quiet" style="margin-top: var(--m)">As of November 2026, from each app's own site.</p>
+  </section>
+
+  <!-- 5. Цена. Ссылки появятся со сборкой и магазином: data-todo — скачивание .dmg и окно оплаты (тогда: href, подпись «Download free trial», снять aria-disabled) -->
+  <section id="pricing">
+    <div class="head"><h2>Pay once. Keep it</h2></div>
+    <div class="block pricing" data-reveal>
+      <div class="facts">
+        <div><h3>30‑day free trial</h3><p>Everything unlocked from the first launch.</p></div>
+        <div><h3>Everything included</h3><p>One version. No Pro tier, no add‑ons.</p></div>
+        <div><h3>A year of updates</h3><p>Every version released during your year is yours.</p></div>
+        <div><h3>No subscription</h3><p>After the first year Mus3 keeps working. Renew at a discount for newer versions, or stay on yours.</p></div>
+      </div>
+      <div class="buy">
+        <p class="sum">$25<small>one‑time</small></p>
+        <div class="row"><a class="btn btn-primary" data-todo="download" aria-disabled="true"><i class="dot"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5v9M3.5 8 7 11.5 10.5 8"/></svg></i><span>Free trial coming soon</span></a><a class="btn btn-ghost" data-todo="buy" aria-disabled="true">Buy for $25</a></div>
+        <p class="meta"><span>macOS 14 Sonoma or later</span><span>Apple silicon &amp; Intel</span></p>
+      </div>
+    </div>
+    <p class="quiet" style="margin-top: var(--m)"><a href="terms.html">Terms</a> · <a href="refund.html">Refunds</a> · <a href="privacy.html">Privacy</a></p>
+  </section>
+
+  <!-- 6. Вопросы (ответы продублированы в JSON-LD в <head> — менять вместе). Короткие, сеткой, без спойлеров -->
+  <section id="faq">
+    <div class="head"><h2>Questions</h2></div>
+    <div class="grid3">
+      <div class="block tile" id="switch"><h3>Do I have to import my library?</h3><p>No. Point Mus3 at your folders and start listening. Nothing is copied or moved. Ratings, tags and artwork saved in your files show up as they are.</p></div>
+      <div class="block tile"><h3>Do I need an account or the internet?</h3><p>No. Mus3 plays files on your Mac. No account, no sign‑in. It goes online only for what you ask for: cover art, lyrics, tag lookup, radio.</p></div>
+      <div class="block tile"><h3>What does Mus3 do with my files?</h3><p>Nothing until you say so. Tags, ratings and artwork are written when you edit them. Files move only when you send or organise them.</p></div>
+      <div class="block tile"><h3>What happens after the first year?</h3><p>Mus3 keeps working, for good. You keep every version released during your year. Newer ones are a discounted renewal, only if you want them.</p></div>
+      <div class="block tile"><h3>Will it be on the Mac App Store?</h3><p>Later, and with fewer features because of App Store rules. The full version lives here.</p></div>
+      <div class="block tile"><h3>What about cracked copies?</h3><p>A cracked Mus3 is someone else’s program with our name on it. We can’t tell you what it does on your Mac.</p></div>
+    </div>
+  </section>
+
+  <!-- 7. Последний экран: знак и слово, кнопка, факты одной строкой -->
+  <section class="final block" id="download">
+    <div class="lockup"><i class="glyph"></i><h2 class="name">Mus<span class="three">3</span></h2></div>
+    <a class="btn btn-primary" data-todo="download" aria-disabled="true"><i class="dot"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5v9M3.5 8 7 11.5 10.5 8"/></svg></i><span>Free trial coming soon</span></a>
+    <p class="meta"><span>$25 once</span><span>30‑day free trial</span><span>No account</span><span>macOS 14 or later</span><span>Apple silicon &amp; Intel</span></p>
+  </section>
+
+  <!-- Подвал — оглавление -->
+  <footer>
+    <div class="block">
+      <div class="cols">
+        <div><span class="eyebrow">Mus3</span><a href="#features">Features</a><a href="#compare">How it compares</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a></div>
+        <div><span class="eyebrow">Site</span><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund.html">Refunds</a><a href="mailto:hello@mus3.app">Contact</a></div>
+        <div><span class="eyebrow">Made by</span><span>Sasha Gikalo</span><span>Tag lookup: MusicBrainz and Cover Art Archive</span></div>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script>/* шапка стекленеет, как только страница поехала */
+const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 4);
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+</script>
+<script>/* Задник, стекло и появление блоков — как на сайте Sapfire */
+(() => {
+  const motion = document.documentElement.classList.contains('motion');
+  // появление при прокрутке
+  const rev = [...document.querySelectorAll('[data-reveal]')];
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+  rev.forEach(el => io.observe(el));
+  // блик на стекле за курсором: только блокам рядом с курсором (--cur-near)
+  const glass = [...document.querySelectorAll('.block')];   // фишкам сцен не нужно: у них своё мерцание
+  glass.forEach(el => el.classList.add('glassy'));
+  const css = getComputedStyle(document.documentElement), NEAR = parseFloat(css.getPropertyValue('--cur-near')) || 200;
+  // свет задника: при прокрутке уходит вверх медленнее страницы, за курсором — чуть к нему
+  const glow = document.querySelector('.bg .glow'), bg = getComputedStyle(document.querySelector('.bg'));
+  const kS = parseFloat(bg.getPropertyValue('--par-scroll')) || 0, kC = parseFloat(bg.getPropertyValue('--par-cursor')) || 0, kM = parseFloat(bg.getPropertyValue('--par-max')) || 0;
+  let mx = null, my = null, raf = 0;
+  const frame = () => { raf = 0;
+    const cx = mx == null ? 0 : (mx / innerWidth - .5) * kC, cy = my == null ? 0 : (my / innerHeight - .5) * kC;
+    if (motion) glow.style.transform = `translate3d(${cx}px, ${cy - Math.min(scrollY * kS, innerHeight * kM)}px, 0)`;
+    if (mx == null) return;
+    for (const el of document.querySelectorAll('.glassy')) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom < -NEAR || r.top > innerHeight + NEAR) { el.classList.remove('near'); continue; }
+      const dx = Math.max(r.left - mx, 0, mx - r.right), dy = Math.max(r.top - my, 0, my - r.bottom), k = Math.max(0, 1 - Math.hypot(dx, dy) / NEAR);
+      el.classList.toggle('near', k > 0);
+      if (k > 0) { el.style.setProperty('--gx', (mx - r.left) + 'px'); el.style.setProperty('--gy', (my - r.top) + 'px'); el.style.setProperty('--gk', k.toFixed(3)); }
+    }
+  };
+  const ask = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; mx = e.clientX; my = e.clientY; ask(); }, { passive: true });
+  addEventListener('scroll', ask, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => { mx = my = null; document.querySelectorAll('.glassy.near').forEach(el => el.classList.remove('near')); ask(); });
+})();
+</script>
+<script>/* листочки слетают со знака под курсором, сам знак покачивается, как от ветра: ромбик появляется там, где курсор над кроной (по маске assets/symbol.png), и падает, качаясь */
+(() => {
+  const el = document.querySelector('.emblem');
+  if (!el || !document.documentElement.classList.contains('motion')) return;
+  const EVERY = 55, MAX = 36;                     // не чаще, мс; столько листочков разом
+  const FALL = [1.1, 2.1], DRIFT = .7, SWAY = .22, LIFE = [1600, 2600];   // ближние листья: падение, снос и размах взмаха — в высотах знака; время, мс
+  const C1 = [255, 187, 81], C2 = [255, 108, 0];  // --c1, --c2
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  let alpha = null, mw = 0, mh = 0, last = 0, live = 0;
+  /* Полёт листа — «падающий лист»: качается из стороны в сторону, как маятник (x — косинусоида), и спускается неровно:
+     в крайних точках взмаха почти зависает, в середине разгоняется (вертикальная скорость v·(1 − k·cos 2ωt)). Число взмахов целое —
+     поэтому лист приходит точно в цель. Крен — по ходу взмаха; сам ромб медленно переворачивается вокруг длинной оси (rotateY).
+     В конце (land) крен и переворот плавно сходятся к положению «лёг плашмя». Кадры — 30 в секунду, между ними браузер ведёт по прямой */
+  const GLIDE = { swing: [1.3, 1.9], amp: [22, 48], k: .85, bank: [18, 32], spin: [60, 200] };   // период взмаха, с; размах, px; зависание в краях (0–1); крен, °; переворот, °/с
+  const smooth = t => t * t * (3 - 2 * t);
+  function glide(x0, y0, x1, y1, ms, o = {}) {
+    const T = ms / 1000, P = o.swing ?? rnd(...GLIDE.swing), n = Math.max(1, Math.round(2 * T / P)), w = n * Math.PI / T;
+    const A = (o.amp ?? rnd(...GLIDE.amp)) * (Math.random() < .5 ? -1 : 1), v = (y1 - y0) / T, K = GLIDE.k;
+    const end = A * (1 - Math.cos(n * Math.PI)), bank = rnd(...GLIDE.bank) * Math.sign(A), spin = rnd(...GLIDE.spin) * (Math.random() < .5 ? -1 : 1);
+    const s0 = rnd(0, 360), sEnd = s0 + spin * T, sFlat = Math.round(sEnd / 180) * 180, land = o.land ? Math.min(.6, T * .15) : 0;
+    const frames = [], N = Math.max(8, Math.ceil(T * 30));
+    for (let q = 0; q <= N; q++) {
+      const t = q / N * T, ph = w * t;
+      const x = x0 + (x1 - x0 - end) * t / T + A * (1 - Math.cos(ph));
+      const y = y0 + v * t - v * K * Math.sin(2 * ph) / (2 * w);
+      let b = bank * Math.sin(ph), sp = s0 + spin * t;
+      if (land && t > T - land) { const m = smooth((t - T + land) / land); b = b * (1 - m) + o.land * m; sp = sp * (1 - m) + sFlat * m; }
+      const f = { transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(90 + b).toFixed(1)}deg) rotateY(${sp.toFixed(1)}deg)` };
+      if (o.fade) f.opacity = Math.min(1, t / (T * .1), (T - t) / (T * o.fade));
+      frames.push(f);
+    }
+    return frames;
+  }
+
+  // Некоторые листья летят через всю страницу и ложатся на дно последнего блока (#download) — лежат там до перезагрузки
+  const FAR = .18, FAR_MAX = 90, SPEED = [170, 240], WANDER = .35, HEAP = .3;   // доля дальних; сколько всего; средняя скорость спуска, px/с; разброс по ширине блока; прибавка горки (в высотах листа)
+  const BINS = 40, heap = new Array(BINS).fill(0);                              // горка: высота по 40 полоскам ширины блока
+  let far = 0, layer = null;
+  const ground = () => document.querySelector('.final');
+  function traveller(x0, y0, color, w) {
+    const g = ground(); if (!g || far >= FAR_MAX) return false;
+    far++;
+    if (!layer) { layer = document.createElement('div'); layer.className = 'fall'; document.body.append(layer); }
+    const gr = g.getBoundingClientRect(), gx = gr.left + scrollX, gb = gr.bottom + scrollY, h = w * 1.6;
+    // куда ляжет: внутри блока, ближе к точке старта, со сносом по ветру; дно — нижняя кромка блока изнутри
+    const u = Math.min(.97, Math.max(.03, (x0 - gx) / gr.width + rnd(-WANDER * .4, WANDER)));
+    const bin = Math.min(BINS - 1, Math.floor(u * BINS)), lift = heap[bin];
+    heap[bin] += h * HEAP; if (bin > 0) heap[bin - 1] += h * HEAP / 2; if (bin < BINS - 1) heap[bin + 1] += h * HEAP / 2;
+    const x1 = gx + u * gr.width, y1 = gb - lift - w / 2, ms = (y1 - y0) / rnd(...SPEED) * 1000;   // центр лежащего листа: плашмя он высотой w
+    const rest = rnd(-14, 14);
+    const i = document.createElement('i'); i.style.background = color; i.style.setProperty('--lw', w + 'px'); layer.append(i);
+    const fr = glide(x0, y0, x1, y1, ms, { land: rest }); fr[0].opacity = 0; fr[Math.min(3, fr.length - 1)].opacity = 1;
+    i.animate(fr, { duration: ms, easing: 'linear' }).onfinish = () => {
+      i.remove();
+      const r = document.createElement('i'); r.className = 'rest'; r.style.background = color; r.style.setProperty('--lw', w + 'px');
+      r.style.left = (u * 100) + '%'; r.style.bottom = `${lift - (h * .5 - w * .5)}px`; r.style.transform = `rotate(${90 + rest}deg)`;
+      g.append(r);
+    };
+    return true;
+  }
+  const img = new Image();
+  img.onload = () => { const c = document.createElement('canvas'); mw = c.width = 64; mh = c.height = Math.round(64 * img.height / img.width);
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, mw, mh); alpha = g.getImageData(0, 0, mw, mh).data; };
+  img.src = 'assets/symbol.png';
+  const onCrown = (u, v) => alpha && u >= 0 && u < 1 && v >= 0 && v < 1 && alpha[(Math.floor(v * mh) * mw + Math.floor(u * mw)) * 4 + 3] > 128;
+  function leaf(u, v, r) {
+    if (live >= MAX) return;
+    const i = document.createElement('i'); i.className = 'leaf';
+    i.style.background = `rgb(${C1.map((c, k) => Math.round(c + (C2[k] - c) * v)).join(' ')})`;
+    const x = u * r.width, y = v * r.height, h = r.height, side = Math.random() < .2 ? -1 : 1;   // ветер дует вправо: туда летит большинство
+    if (Math.random() < FAR) {   // этот летит до последнего блока
+      const w = r.width * parseFloat(getComputedStyle(el).getPropertyValue('--leaf')) / 100;
+      if (traveller(r.left + scrollX + x, r.top + scrollY + y, i.style.background, w)) return;
+    }
+    el.append(i); live++;
+    const ms = rnd(...LIFE);   // ближний: пара взмахов вниз-вбок и тает
+    i.animate(glide(x, y, x + side * rnd(.1, DRIFT) * h, y + rnd(...FALL) * h, ms, { swing: rnd(.7, 1), amp: SWAY * h, fade: .35 }),
+      { duration: ms, easing: 'linear' }).onfinish = () => { i.remove(); live--; };
+  }
+  const shed = (e, n = 1) => {
+    const r = el.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, v = (e.clientY - r.top) / r.height;
+    if (onCrown(u, v)) for (let k = 0; k < n; k++) leaf(u, v, r);
+  };
+  el.addEventListener('pointermove', e => { const t = performance.now(); if (t - last < EVERY) return; last = t; shed(e); });
+  el.addEventListener('pointerdown', e => shed(e, 5));
+  // ветер: пока курсор над знаком, крона клонится по ветру и трепещет. Основание стоит на месте, верх уходит дальше (сдвиг, а не поворот целиком);
+  // порывы — сумма нескольких несоразмерных волн, поэтому движение не повторяется. Курсор ушёл — ветер плавно стихает
+  const LEAN = 1.3;                                   // наклон по ветру, градусы
+  const WAVES = [[1.5, 3.1, 0], [.7, 1.37, 1.3], [.3, .61, .5]];   // волны: размах (градусы), период (с), сдвиг
+  const GUST = [.55, 5.3], TURN = .28, RISE = 1.2, FADE = 2.2;      // порыв: глубина и период; доля поворота; ветер поднимается и стихает, 1/с
+  el.style.transformOrigin = getComputedStyle(el).getPropertyValue('--mark-split').trim() + ' 100%';
+  let k = 0, want = 0, t0 = 0, prev = 0, blowing = 0;
+  const blow = now => {
+    const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+    k += (want - k) * Math.min(1, dt * (want ? RISE : FADE));
+    if (!want && k < .002) { el.style.transform = ''; blowing = 0; return; }
+    const t = (now - t0) / 1000, w = 2 * Math.PI;
+    const gust = 1 - GUST[0] / 2 + GUST[0] / 2 * Math.sin(w * t / GUST[1]);
+    const a = k * gust * (LEAN + WAVES.reduce((sum, [amp, per, ph]) => sum + amp * Math.sin(w * t / per + ph), 0));
+    el.style.transform = `skewX(${(-a).toFixed(3)}deg) rotate(${(a * TURN).toFixed(3)}deg)`;
+    blowing = requestAnimationFrame(blow);
+  };
+  el.addEventListener('pointerenter', () => { want = 1; if (!blowing) { prev = performance.now(); if (!k) t0 = prev; blowing = requestAnimationFrame(blow); } });
+  el.addEventListener('pointerleave', () => { want = 0; });
+})();
+</script>
+<script src="assets/mock.js?6"></script>
+</body>
+</html>

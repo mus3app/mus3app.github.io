@@ -1,0 +1,23 @@
+/* Страницы условий. Размеры и цвета — те же, что в index.html (:root там — основа; менять в обоих местах) */
+:root { --m: 24px; --max: 760px; --r-block: 12px; --h-nav: 44px; --bg: #0F0E0D; --ink: #F5F4F2; --mute: rgb(245 244 242 / .62);
+  --glass: rgb(255 255 255 / .05); --glass-fill: linear-gradient(155deg, rgb(255 255 255 / .08), rgb(255 255 255 / 0) 45%), var(--glass);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / .14), inset 0 0 0 1px rgb(255 255 255 / .09), 0 0 12px rgb(0 0 0 / .35);
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif; --display: "Bebas Neue", "Impact", var(--sans); }
+@font-face { font-family: "Bebas Neue"; src: url(bebas-neue.woff2) format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@media (max-width: 720px) { :root { --m: 16px; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font: 17px/1.55 var(--sans); background: linear-gradient(to bottom, #151413, #0B0A0A) fixed var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.wrap { max-width: calc(var(--max) + 2 * var(--m)); margin: 0 auto; padding: var(--m); display: grid; gap: var(--m); }
+.logo { display: inline-flex; align-items: center; gap: 8px; height: var(--h-nav); font: 400 24px/1 var(--display); letter-spacing: .02em; text-decoration: none; }
+.logo .glyph { height: .7em; width: calc(.7em * 647 / 761); background: linear-gradient(#FFBB51, #FF6C00);
+  -webkit-mask: url(symbol.png) center / 100% 100% no-repeat; mask: url(symbol.png) center / 100% 100% no-repeat; }
+.logo span { position: relative; top: .052em; }
+.block { background: var(--glass-fill); box-shadow: var(--glass-edge); border-radius: var(--r-block); padding: var(--m); display: grid; gap: calc(var(--m) / 2); }
+h1 { font: 600 clamp(32px, 4.6vw, 56px)/1.05 var(--sans); letter-spacing: -.02em; }
+h2 { font: 500 20px/1.25 var(--sans); }
+p, li { color: var(--mute); text-wrap: pretty; }
+ul { padding-left: 1.2em; display: grid; gap: 4px; }
+.fine { font-size: 13px; color: var(--mute); }
+footer { font-size: 13px; color: var(--mute); display: flex; flex-wrap: wrap; gap: var(--m); }
+footer a { text-decoration: none; }
