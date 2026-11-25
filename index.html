@@ -305,12 +305,14 @@ section { margin-top: var(--section); }
 .duo .text { display: grid; gap: var(--m); align-content: center; padding: var(--m); }
 .pic { display: block; width: 100%; height: auto; }
 .duo .pic { height: 100%; object-fit: cover; object-position: left top; }
+.duo.flip { grid-template-columns: 7fr 5fr; }   /* снимок слева, текст справа — чередуется с соседним разделом */
+.duo.flip .pic { object-position: right top; }
 /* 3. Остальное: два снимка с подписью, под ними плитки */
 .shots2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--m); }
 .shots2 .tile { padding: 0; overflow: hidden; gap: 0; }
 .shots2 .pic { aspect-ratio: 2 / 1; object-fit: cover; object-position: left top; }
 .shots2 figcaption { display: grid; gap: calc(var(--m) / 2); padding: var(--m); }
-@media (max-width: 900px) { .duo, .shots2 { grid-template-columns: 1fr; } .duo .pic { height: auto; } }
+@media (max-width: 900px) { .duo, .duo.flip, .shots2 { grid-template-columns: 1fr; } .duo .pic { height: auto; } .duo.flip .text { order: -1; } }   /* телефон: текст над снимком, как в соседнем разделе */
 .more { margin-top: var(--m); }
 
 /* 4. Сравнение: четыре цифры (кеглем заголовка раздела) и таблица в блоке; столбец Mus3 светлее, без линий между строками */
@@ -414,6 +416,18 @@ footer { margin: var(--section) 0 var(--m); }
     </div>
   </section>
 
+  <!-- 2a. Batch Edit — снимок настоящего окна на копии альбома с испорченными тегами (tools/shoot/messtags.py): Case & Text, Title Case + подчёркивания → пробелы -->
+  <section id="batch">
+    <div class="head"><h2>Fix a whole album in one go</h2></div>
+    <div class="block duo flip" data-reveal>
+      <img class="pic" src="assets/shots/batch-edit.avif" width="1650" height="1136" decoding="async" loading="lazy" alt="Mus3 Batch Edit: lowercase titles with underscores turned into Title Case, old values struck through above the new ones">
+      <div class="text">
+        <p class="lead">Case, spaces, numbering, names from file names. Every change is shown before it is written: the old value above, struck through.</p>
+        <p class="quiet">Nine tools in one window: Find Tags, Search &amp; Replace, Case &amp; Text, Renumber, Swap, Compose, Rename Files, Infer Tags and Original Album.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- 3. Остальное — только то, чего нет в первом экране: два снимка и короткие плитки -->
   <section id="features">
     <div class="head"><h2>Made for collections, not playlists of the week</h2></div>
@@ -428,7 +442,7 @@ footer { margin: var(--section) 0 var(--m); }
       </figure>
     </div>
     <div class="grid3 more">
-      <div class="block tile" data-reveal style="--i: 0"><h3>Batch Edit and Find Tags</h3><p>Change tags across hundreds of tracks. Match albums against MusicBrainz.</p></div>
+      <div class="block tile" data-reveal style="--i: 0"><h3>Tag editor</h3><p>Every field, artwork and lyrics. One track or a hundred at once.</p></div>
       <div class="block tile" data-reveal style="--i: 1"><h3>Auto‑playlists</h3><p>Rules that keep themselves up to date, including “has duplicates”.</p></div>
       <div class="block tile" data-reveal style="--i: 2"><h3>Full Cover and Visualizer</h3><p>The artwork, or a pattern drawn from the music, across the whole window.</p></div>
       <div class="block tile" data-reveal style="--i: 0"><h3>Your formats</h3><p>MP3, FLAC, ALAC, AAC, WAV, AIFF, Ogg Vorbis and Opus. Ratings and tags are saved in the files.</p></div>
